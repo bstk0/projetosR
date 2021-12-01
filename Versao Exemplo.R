@@ -1,5 +1,5 @@
 #Versao Exemplo - 1.0
-#Nova versao
+# Nova versao - edição direta no github
 #Funcoes que estao no script (1.1)
 
 ## -- FUNCTION 1
