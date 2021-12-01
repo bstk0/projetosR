@@ -50,4 +50,17 @@ if (valor >= 1000000) {
   "numero pequeno"
 }
 
-# NO SCRIPT (1.1) VER LINHAS 640 ... 643 ... 661 
+# functions - No SCRIPT (1.1) VER LINHAS 640 ... 643 ... 661 
+# maps      - No SCRIPT (1.1) VER linhas 709 ...
+# ~ summary (linha 719)
+# map_dbl - 736, 740 .. 744
+# map2 - dois inputs ( # rnorm - tem 3 parametros )
+# pmap - n vetores ...( rnorm - tem 3 parametros )
+
+tamanho_var <- list(7,9,11)
+# linha 761 - ...
+# linha 780 - ele colocou o nome do argumento esperado para não se preocupar com a sequencia
+
+# 786 - passando o nome da função como variável string - rnorm e rpois na invoke_map 
+# rnorm e rpois - nros aleatórios
+
