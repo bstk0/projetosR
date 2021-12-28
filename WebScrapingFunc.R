@@ -28,6 +28,8 @@ getFIIData <- function(str) {
   tables <- html_nodes(fiiBody, 'table')
   table2 <- tables[2]
   
+  print(str)
+  
   ult_dt_pagto <- html_nodes(table2, 'tbody td')[2]
   ult_dt_pagto_real <- html_text(ult_dt_pagto)
   print(ult_dt_pagto_real)
@@ -42,4 +44,14 @@ getFIIData <- function(str) {
 # FUNCIONOU !!!
 #getFIIData('BCFF11')
 #getFIIData('BRCO11')
-getFIIData('BTLG11')
+#getFIIData('BTLG11')
+
+# TESTE IN LOOPING - VECTOR - FUNCIONOU TBM !!
+siglas <- c("HGBS11","MALL11","MCCI11","SDIL11","TRXF11")
+for(sigla in siglas) {
+  getFIIData(sigla)
+}
+
+# NEXT STEP : AGORA SERIA JUNTA API COM ESSE LOOPING
+
+
