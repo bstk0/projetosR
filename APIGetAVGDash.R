@@ -13,6 +13,10 @@ if (!('jsonlite' %in% installed.packages())) {
 library(httr)
 library(jsonlite)
 
+#url <- 'https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_div_avg'
+#url <- 'https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_movim_media'
+
+
 jdata <-
   GET('https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_div_avg')
 
@@ -66,7 +70,7 @@ View(out_df)
 # directory
 
 # EXPORT TO CSV
-write.csv(out_df, '/home/rodrigo/Documents/Dash_AVG_DIV.csv', row.names = FALSE)
+# write.csv(out_df, '/home/rodrigo/Documents/Dash_AVG_DIV.csv', row.names = FALSE)
 
 # CALCULO NO APPGYVER
 # FORMAT_LOCALIZED_DECIMAL(
