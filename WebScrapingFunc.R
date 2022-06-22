@@ -1,11 +1,17 @@
-#install.packages("rvest")
-if (!('rvest' %in% installed.packages())) {
-  install.packages('rvest')
-}
+##################################################################################
+#                  INSTALAÇÃO E CARREGAMENTO DE PACOTES NECESSÁRIOS             #
+##################################################################################
+#Pacotes utilizados
+pacotes <- c("rvest","tidyverse")
 
-#install.packages("tidyverse")
-if (!('tidyverse' %in% installed.packages())) {
-  install.packages('tidyverse')
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
 }
 
 # Se já instalou para análises anteriores, basta carregar o pacote

@@ -1,17 +1,17 @@
-#Get API Restful
-if (!('curl' %in% installed.packages())) {
-  install.packages("curl")
-}
-if (!('httr' %in% installed.packages())) {
-  install.packages('httr')
-}
+##################################################################################
+#                  INSTALAÇÃO E CARREGAMENTO DE PACOTES NECESSÁRIOS             #
+##################################################################################
+#Pacotes utilizados
+pacotes <- c("curl","httr","jsonlite","lubridate","dplyr")
 
-if (!('jsonlite' %in% installed.packages())) {
-  install.packages('jsonlite')
-}
-#lubridate
-if (!('lubridate' %in% installed.packages())) {
-  install.packages('lubridate')
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
 }
 
 
@@ -89,39 +89,35 @@ filter(df_sum, ano == 2022 & mes == 1 )
 #filter(df_sum, stock_id == 49 & (ano < 2022 |(ano == 2022 & mes <= 1 ))) %>%
 #sum(test$qtdeTotal)
 
-test1 <- getQtdeTotalAcoes(df_sum, p_id = 49,p_ano = 2022, p_mes = 1)
-test1 <- getQtdeTotalAcoes(df_sum, p_id = 2,p_ano = 2021, p_mes = 8)
-
+#TESTES
+#test1 <- getQtdeTotalAcoes(df_sum, p_id = 49,p_ano = 2022, p_mes = 1)
+#test1 <- getQtdeTotalAcoes(df_sum, p_id = 2,p_ano = 2021, p_mes = 8)
 
 ##---
 # DIVIDENDOS
-
-#jdata <-
-#  GET('https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_div_avg')
 jdata <-
   GET('https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_divid')
 
 df_div <- convertToDF(jdata)
 
 #test <- filter(df_div, ano_mes == '202201' & stock_id == 49 )
-test2 <- getValorDiv(df_div, p_id = 2, p_anomes = '202110')
+#test2 <- getValorDiv(df_div, p_id = 2, p_anomes = '202110')
 
 ##---
 
 #montando saida TESTE ....
 
-totalAcoes <- getQtdeTotalAcoes(df_sum, p_id = 45,p_ano = 2022, p_mes = 5)
-valorDiv <- getValorDiv(df_div, p_id = 45, p_anomes = '202205')
-
-total1 <- totalAcoes * valorDiv  
+#totalAcoes <- getQtdeTotalAcoes(df_sum, p_id = 45,p_ano = 2022, p_mes = 5)
+#valorDiv <- getValorDiv(df_div, p_id = 45, p_anomes = '202205')
+#total1 <- totalAcoes * valorDiv  
 
 #---
 # SAIDA FINAL POR MES
 
-tab = data.frame(x = 1:3, y=2:4, z=3:5)
-for (A in rows(tab)) {
-  print(A$x + A$y * A$z)
-} 
+#tab = data.frame(x = 1:3, y=2:4, z=3:5)
+#for (A in rows(tab)) {
+#  print(A$x + A$y * A$z)
+#} 
 
 #---
 # SAIDA FINAL
@@ -131,8 +127,8 @@ for (i in 1:dim(df_siglas)[1]) {
  vec <- numeric(4)
  print(df_siglas$sigla[i])
  print(df_siglas$id[i])
- t2 <- getQtdeTotalAcoes(df_sum, p_id = df_siglas$id[i],p_ano = 2022, p_mes = 5)
- t3 <- getValorDiv(df_div, p_id = df_siglas$id[i], p_anomes = '202205')
+ t2 <- getQtdeTotalAcoes(df_sum, p_id = df_siglas$id[i],p_ano = 2022, p_mes = 6) #QTDE
+ t3 <- getValorDiv(df_div, p_id = df_siglas$id[i], p_anomes = '202206')          #DIV
  #t2 <- ifelse(is.null(t2), 0, t2)
  t2 <- validaNullNUmber(t2)
  t3 <- validaNullNUmber(t3)
@@ -150,6 +146,7 @@ colnames(df_list) <- c("SIGLA","QTDE","VALOR","TOTAL")
 #as.numeric(df_list$TOTAL)
 sum(as.numeric(df_list$TOTAL))
 
+#TESTE
 is.null(df_list$VALOR[5])
 is.na(df_list$VALOR[5])
 
@@ -157,41 +154,41 @@ is.na(df_list$VALOR[5])
 
 #View(get_jdata_df)
 
-# # TESTE - Dividendo BARI11
-# get_jdata_df[["sigla"]][[1]]
-# #ultimo dividendo
-# get_jdata_df[[6]][[1]][["valor"]]
-# #qtde de acoes
-# get_jdata_df[[7]][[1]][["stock_movin_qtde"]]
-# #valor medio
-# get_jdata_df[[8]][[1]][["stock_movin_valor"]]
-
-# GERANDO DATA FRAME
-# nrow(get_jdata_df)
-cols = 4
-rows <- nrow(get_jdata_df)
-
-out_matrix <- matrix(ncol = cols, nrow = rows)
-
-for (i in 1:nrow(get_jdata_df)) {
-  out_matrix[i, 1] <- get_jdata_df[["sigla"]][[i]]
-  out_matrix[i, 2] <- get_jdata_df[[6]][[i]][["stock_divid_valor"]]
-  out_matrix[i, 3] <- get_jdata_df[[7]][[i]][["stock_movin_valor"]]
-  out_matrix[i, 4] <-
-    ((get_jdata_df[[6]][[i]][["stock_divid_valor"]] * 100) / get_jdata_df[[7]][[i]][["stock_movin_valor"]])
-}
-
-out_matrix
-out_df <- data.frame(out_matrix)
-
-# CABEÇALHO
-novos_nomes <- c("SIGLA",
-                 "VL_MED_DIVID",
-                 "VL_MEDIO_ACAO",
-                 "%")
-
-names(out_df) <- novos_nomes
-View(out_df)
+# # # TESTE - Dividendo BARI11
+# # get_jdata_df[["sigla"]][[1]]
+# # #ultimo dividendo
+# # get_jdata_df[[6]][[1]][["valor"]]
+# # #qtde de acoes
+# # get_jdata_df[[7]][[1]][["stock_movin_qtde"]]
+# # #valor medio
+# # get_jdata_df[[8]][[1]][["stock_movin_valor"]]
+# 
+# # GERANDO DATA FRAME
+# # nrow(get_jdata_df)
+# cols = 4
+# rows <- nrow(get_jdata_df)
+# 
+# out_matrix <- matrix(ncol = cols, nrow = rows)
+# 
+# for (i in 1:nrow(get_jdata_df)) {
+#   out_matrix[i, 1] <- get_jdata_df[["sigla"]][[i]]
+#   out_matrix[i, 2] <- get_jdata_df[[6]][[i]][["stock_divid_valor"]]
+#   out_matrix[i, 3] <- get_jdata_df[[7]][[i]][["stock_movin_valor"]]
+#   out_matrix[i, 4] <-
+#     ((get_jdata_df[[6]][[i]][["stock_divid_valor"]] * 100) / get_jdata_df[[7]][[i]][["stock_movin_valor"]])
+# }
+# 
+# out_matrix
+# out_df <- data.frame(out_matrix)
+# 
+# # CABEÇALHO
+# novos_nomes <- c("SIGLA",
+#                  "VL_MED_DIVID",
+#                  "VL_MEDIO_ACAO",
+#                  "%")
+# 
+# names(out_df) <- novos_nomes
+# View(out_df)
 
 # Obtem diretorio aberto - para verificar formato.
 # directory <- getwd()
