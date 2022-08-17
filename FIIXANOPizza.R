@@ -1,3 +1,19 @@
+##################################################################################
+#                  INSTALAÇÃO E CARREGAMENTO DE PACOTES NECESSÁRIOS             #
+##################################################################################
+#Pacotes utilizados
+pacotes <- c("lessR","dplyr")
+
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
+}
+
 #get data
 # from : https://stackoverflow.com/questions/46069322/r-api-call-for-json-data-and-converting-to-dataframe
 

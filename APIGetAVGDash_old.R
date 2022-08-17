@@ -1,24 +1,21 @@
-##################################################################################
-#                  INSTALAÇÃO E CARREGAMENTO DE PACOTES NECESSÁRIOS             #
-##################################################################################
-#Pacotes utilizados
-pacotes <- c("curl","httr","jsonlite", "dplyr")
+#Get API Restful
+if (!('curl' %in% installed.packages())) {
+  install.packages("curl")
+}
+if (!('httr' %in% installed.packages())) {
+  install.packages('httr')
+}
 
-if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
-  instalador <- pacotes[!pacotes %in% installed.packages()]
-  for(i in 1:length(instalador)) {
-    install.packages(instalador, dependencies = T)
-    break()}
-  sapply(pacotes, require, character = T) 
-} else {
-  sapply(pacotes, require, character = T) 
+if (!('jsonlite' %in% installed.packages())) {
+  install.packages('jsonlite')
 }
 
 library(httr)
 library(jsonlite)
 
 #url <- 'https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_div_avg'
-#url <- 'https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_movim_media'
+url <- 'https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_movim_media'
+
 
 jdata <-
   GET('https://x8ki-letl-twmt.n7.xano.io/api:c3d5C6VM/stock_div_avg')
@@ -73,7 +70,7 @@ View(out_df)
 # directory
 
 # EXPORT TO CSV
-# write.csv(out_df, '/home/rodrigo/Documents/Dash_AVG_DIV.csv', row.names = FALSE)
+write.csv(out_df, '/home/rodrigo/Documents/Dash_AVG_DIV.csv', row.names = FALSE)
 
 # CALCULO NO APPGYVER
 # FORMAT_LOCALIZED_DECIMAL(
