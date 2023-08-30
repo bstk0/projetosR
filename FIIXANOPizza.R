@@ -43,7 +43,7 @@ df <- jsonlite::fromJSON(char)
 
 #aggregate(df$valor, by=list(Stock=df$stock_id), FUN=sum)
 
-library(dplyr)
+#library(dplyr)
 df %>% 
   group_by(stock_id) %>% 
   summarise(Valor = sum(valor))
@@ -135,4 +135,27 @@ PieChart(sigla, y=perc, data = dfa,
 #sum( df_sum[which(df_sum$sigla == 'DEVA11'), 2])
 
 # https://www.4devs.com.br/calculadora_regra_tres_simples
+
+#Donut chart por setor
+fiiSetor <- read.csv("meusFiiSetor.CSV")
+df_join <- left_join(x=df_sum,y=fiiSetor, by=c('sigla' = 'CODIGO'))
+
+df_sum_join <- df_join[,c("Setor","soma")]
+
+sum_total_join <- sum(df_sum_join$soma)
+
+#valor total por setor
+dfa_join <- aggregate(df_sum_join$soma, by=list(df_sum_join$Setor), FUN=sum)
+
+#valor percentual por setor
+dfa_join <- transform(dfa_join, perc= x * 100/sum_total_join);
+
+#Renomeia para fazer usar no grafico
+names(dfa_join)[names(dfa_join) == "Group.1"] <- "Setor"
+
+# Donut chart por Setor
+#library(lessR)
+PieChart(Setor, y=perc, data = dfa_join,
+         values_digits=2,
+         main = NULL)
 
