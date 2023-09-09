@@ -3,7 +3,7 @@
 
 # Utilizando dados do TCC ...
 pacotes <- c("seleniumPipes","RSelenium","rvest","openxlsx","XML",
-             "dplyr","kableExtra")
+             "dplyr","kableExtra","scales")
 #pacotes <- c("rvest","tidyverse""writexl")
 
 
@@ -25,7 +25,11 @@ virgulaToValor <- function(str) {
   return(novoValor)
 }
 
+specify_decimal <- function(x, k) {
+  trimws(format(round(x, k), nsmall=k))
+}
 #----
+tccPath = "C://BISTERCO//MBA//TCC//"
 # filename <- paste0("R-out_", format(Sys.Date(), "%d-%m-%Y"), ".html")
 filename <- "C://BISTERCO//MBA//TCC//R-out_30-08-2023.html"
 #filename <- "C:/BISTERCO/MBA/TCC/R-out_30-08-2023.html"
@@ -63,7 +67,7 @@ csvPath <- 'CARTEIRA-2023-08-30.csv'
 #dfSetorDeParaA <- read.df(csvPath, "csv", header = "true", inferSchema = "true", na.strings = "NA")
 dfCarteira <- read.csv(csvPath)
 
-# agregar por ação ...
+# agregar por ação ... nao deu certo
 # Group by count using R Base aggregate()
 agg_ACAO <- aggregate(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP,
                       by=list(dfCarteira$ACAO), FUN=length)
@@ -73,10 +77,10 @@ agg_ACAO <- aggregate(dfCarteira$ACAO,
 
 #summarise(dfCarteira)
 
+dfCarteira1 <- select(dfCarteira, 'ACAO','QTDE','TOTAL.OP' ) 
+
 dfCarteira1[dfCarteira1$ACAO == "HABT11",]
 dfCarteira1[dfCarteira1$ACAO == "VSLH11",]
-
-dfCarteira1 <- select(dfCarteira, 'ACAO','QTDE','TOTAL.OP' ) 
 
 dfCarteira1$TOTAL.OP <- virgulaToValor(dfCarteira1$TOTAL.OP)
 
@@ -111,4 +115,96 @@ dfCarteira2 <- dfCarteira2 %>%
   mutate(percent = (TOTAL.OP/totalGeral)*100)
 
 sum(dfCarteira2$percent)
+dfCarteira2
 
+#options(scipen=100, digits = 3)
+options(digits = 3)
+
+legenda <- paste(dfCarteira2$ACAO, specify_decimal(dfCarteira2$percent,2))
+legenda
+# nao ficou legal ...
+pie( x = dfCarteira2$percent,
+     labels = legenda,
+     main = "CARTEIRA",
+     lty = 2)
+
+# Donut chart por Setor
+library(lessR)
+PieChart(ACAO, y=percent, data = dfCarteira2,
+         values_digits=2,
+         main = NULL)
+
+dfAcaoSetor <- select(tbls_datafe, 'Fundos', 'Setor')
+
+dfCarteiraBKP <- dfCarteira2
+
+tbls_datafe <- tbls_datafe[!is.na(tbls_datafe$Setor),]
+tbls_datafe <- tbls_datafe[!is.na(tbls_datafe$Fundos),]
+
+dfCarteira2 <- dfCarteira2[!is.na(dfCarteira2$ACAO),]
+
+#dfCarteira2$Setor[match(tbls_datafe$Fundos,
+#                        dfCarteira2$ACAO)] <- tbls_datafe$Setor
+
+#tbls_datafe
+# quase 
+#dfCarteira2$Setor <- tbls_datafe[tbls_datafe$Fundos %in% dfCarteira2$ACAO,'Setor']
+
+#dfCarteira2$Setor2 <- dfAcaoSetor[tbls_datafe$Fundos %in% dfCarteira2$ACAO,2]
+
+#dfCarteira2 <- dfCarteiraBKP
+
+dfCarteira2 <- dfCarteira2 %>%
+  mutate(dfAcaoSetor[tbls_datafe$Fundos %in% dfCarteira2$ACAO,2])
+
+## Ajusta indefinidos - INICIO -----
+
+# TestIndefinidos.R
+
+# Carregar DE-PARA
+csvPath <- paste(tccPath,'FII-SETOR-DE_PARA.csv', sep="")
+dfSetorDePara <- read.csv(csvPath)
+
+dfCarteira2 <- dfCarteira2 %>%
+  left_join(., dfSetorDePara, by=c('ACAO'='Fundos')) %>%
+  mutate(Setor = ifelse(!is.na(SetorNew), SetorNew, Setor)) %>%
+  select(-SetorNew)
+
+## Ajusta indefinidos - FIM -----
+
+# dfCarteira2 ficou como base ...
+View(dfCarteira2)
+
+dfCarteiraSetor <- dfCarteira2 %>% 
+  group_by(Setor) %>% 
+  summarise(across(c(QTDE, TOTAL.OP), sum)) %>%
+  mutate(percent = (TOTAL.OP/totalGeral)*100)
+
+sum(dfCarteiraSetor$percent)
+sum(dfCarteiraSetor$TOTAL.OP)
+
+# funcionou - grafico pizza por setor 
+PieChart(x = Setor, y=percent, data = dfCarteiraSetor,
+         values_digits=2,
+         main = NULL)
+
+## VALOR PAGO X VALOR ATUAL - INICIO -----
+head(tbls_datafe)
+dfAcaoValor <- select(tbls_datafe, 'Fundos', `Preço Atual (R$)`)
+View(dfAcaoValor)
+#dfAcaoValor <- dfAcaoValor[!is.na(dfAcaoValor$`Preço Atual (R$)`),]
+
+dfAcaoValor <- dfAcaoValor[dfAcaoValor$`Preço Atual (R$)` != "N/A",]
+
+# mudar virgula-ponto ...
+dfAcaoValor$precoAtual <- virgulaToValor(dfAcaoValor$`Preço Atual (R$)`)
+
+
+dfCarteira2 <- dfCarteira2 %>%
+  mudate(precoAtual = )
+  mutate(totalAtual = precoAtual * )
+
+dfAcaoValor$totalAtual <- virgulaToValor(dfAcaoValor$`Preço Atual (R$)`)
+
+
+## VALOR PAGO X VALOR ATUAL - FIM -----
