@@ -3,7 +3,7 @@
 
 # Utilizando dados do TCC ...
 pacotes <- c("seleniumPipes","RSelenium","rvest","openxlsx","XML",
-             "dplyr","kableExtra","scales")
+             "dplyr","kableExtra","scales","lessR","tidyverse")
 #pacotes <- c("rvest","tidyverse""writexl")
 
 
@@ -31,10 +31,8 @@ specify_decimal <- function(x, k) {
 #----
 tccPath = "C://BISTERCO//MBA//TCC//"
 # filename <- paste0("R-out_", format(Sys.Date(), "%d-%m-%Y"), ".html")
-filename <- "C://BISTERCO//MBA//TCC//R-out_30-08-2023.html"
-#filename <- "C:/BISTERCO/MBA/TCC/R-out_30-08-2023.html"
-#filename <- "file:///C:/BISTERCO/MBA/TCC/R-out_30-08-2023.html"
-#filename <- "C:\BISTERCO\MBA\TCC\R-out_30-08-2023.html"
+#filename <- "C://BISTERCO//MBA//TCC//R-out_30-08-2023.html"
+filename <- paste(tccPath,"R-out_30-08-2023.html", sep = "")
 
 
 fiife <- read_html(filename,encoding = "UTF-8")
@@ -69,13 +67,13 @@ dfCarteira <- read.csv(csvPath)
 
 # agregar por ação ... nao deu certo
 # Group by count using R Base aggregate()
-agg_ACAO <- aggregate(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP,
-                      by=list(dfCarteira$ACAO), FUN=length)
+# agg_ACAO <- aggregate(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP,
+#                       by=list(dfCarteira$ACAO), FUN=length)
 
-agg_ACAO <- aggregate(dfCarteira$ACAO,
-                      by=list(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP), FUN=length)
+# agg_ACAO <- aggregate(dfCarteira$ACAO,
+#                      by=list(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP), FUN=length)
 
-#summarise(dfCarteira)
+summary(dfCarteira)
 
 dfCarteira1 <- select(dfCarteira, 'ACAO','QTDE','TOTAL.OP' ) 
 
@@ -84,8 +82,9 @@ dfCarteira1[dfCarteira1$ACAO == "VSLH11",]
 
 dfCarteira1$TOTAL.OP <- virgulaToValor(dfCarteira1$TOTAL.OP)
 
+summary(dfCarteira1)
 
-library(dplyr)
+# library(dplyr)
 
 dfCarteira2 <- dfCarteira1 %>% 
   group_by(ACAO) %>% 
@@ -129,7 +128,7 @@ pie( x = dfCarteira2$percent,
      lty = 2)
 
 # Donut chart por Setor
-library(lessR)
+# library(lessR)
 PieChart(ACAO, y=percent, data = dfCarteira2,
          values_digits=2,
          main = NULL)
@@ -194,17 +193,70 @@ dfAcaoValor <- select(tbls_datafe, 'Fundos', `Preço Atual (R$)`)
 View(dfAcaoValor)
 #dfAcaoValor <- dfAcaoValor[!is.na(dfAcaoValor$`Preço Atual (R$)`),]
 
+# remove NAs
 dfAcaoValor <- dfAcaoValor[dfAcaoValor$`Preço Atual (R$)` != "N/A",]
 
 # mudar virgula-ponto ...
 dfAcaoValor$precoAtual <- virgulaToValor(dfAcaoValor$`Preço Atual (R$)`)
 
 
-dfCarteira2 <- dfCarteira2 %>%
-  mudate(precoAtual = )
-  mutate(totalAtual = precoAtual * )
+# op. 1  ---------------------------
+#dfCarteira2 <- dfCarteira2 %>%
+#  left_join(., dfSetorDePara, by=c('ACAO'='Fundos')) %>%
+#  mutate(Setor = ifelse(!is.na(SetorNew), SetorNew, Setor)) %>%
+#  select(-SetorNew)
 
-dfAcaoValor$totalAtual <- virgulaToValor(dfAcaoValor$`Preço Atual (R$)`)
+# op. 2  ---------------------------
+dfCarteira2 <- dfCarteira2 %>%
+  mutate(dfAcaoValor[dfAcaoValor$Fundos %in% dfCarteira2$ACAO,3])
+
+#dfCarteira2 <- dfCarteira2 %>%
+#  mudate(precoAtual = dfAcaoValor$precoAtual)
+#  mutate(totalAtual = dfAcaoValor$precoAtual * dfCarteira2$)
+
+dfCarteira2$totalAtual <- dfCarteira2$precoAtual * dfCarteira2$QTDE
+
+sum(dfCarteira2$TOTAL.OP)
+sum(dfCarteira2$totalAtual)
+
+dif <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP)
+
+percDesv <- 100-(sum(dfCarteira2$totalAtual) * 100)/sum(dfCarteira2$TOTAL.OP)
+percDesv
+
+proventos <- 11443.42 # REAL 10294.36
+
+difProv <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP) + proventos
+difProv
+
+atualProv <- sum(dfCarteira2$totalAtual) + proventos
+
+valor <- c(sum(dfCarteira2$TOTAL.OP),sum(dfCarteira2$totalAtual),atualProv)
+legen <- c("1.Total Op.","2.Total Atual","3.Total Atual + Dividentos")
+
+dfGraph <- data.frame(legen, valor)
+
+# grafico
+# library("tidyverse")
+ggplot(data=dfGraph, aes(x=legen, y=valor)) +
+  geom_bar(stat="identity", fill="steelblue")+
+  geom_hline(data = dfGraph %>% filter(legen == "1.Total Op."), aes(yintercept = valor)) +
+  geom_text(aes(label=valor), vjust=1.6, color="white", size=3.5)+
+  xlab("Totais") +
+  ylab("Valores") +
+  ggtitle("Total Investido x Total Atual x Total Atual + Dividendos") +
+  theme_minimal()
+
+# grafico 2
+h <- dfGraph$valor[1]
+# H <- c(30, 35, 7, 12)
+# M <- paste("Issue", seq_along(H))
+H2 <- rbind(pmin(valor, h), pmax(valor-h, 0))
+barplot(H2, names.arg=legen, xlab="Totais", ylab="Valores", col=gray(c(.7, .8)),
+        main="Total Movimentado",  border=NA) # las=2,
+bp <- barplot(valor, col=NA, yaxt='n', las=1, cex.names = 1.5, add=T)
+text(x=bp, y=valor, labels=round(valor,0), pos=3, xpd=NA)
+abline(h=h, col="red", lty=2)
 
 
 ## VALOR PAGO X VALOR ATUAL - FIM -----
