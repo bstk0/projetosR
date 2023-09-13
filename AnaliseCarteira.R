@@ -32,7 +32,7 @@ specify_decimal <- function(x, k) {
 tccPath = "C://BISTERCO//MBA//TCC//"
 # filename <- paste0("R-out_", format(Sys.Date(), "%d-%m-%Y"), ".html")
 #filename <- "C://BISTERCO//MBA//TCC//R-out_30-08-2023.html"
-filename <- paste(tccPath,"R-out_30-08-2023.html", sep = "")
+filename <- paste(tccPath,"R-out_12-09-2023.html", sep = "")
 
 
 fiife <- read_html(filename,encoding = "UTF-8")
@@ -156,6 +156,7 @@ dfCarteira2 <- dfCarteira2[!is.na(dfCarteira2$ACAO),]
 dfCarteira2 <- dfCarteira2 %>%
   mutate(dfAcaoSetor[tbls_datafe$Fundos %in% dfCarteira2$ACAO,2])
 
+View(dfCarteira2)
 ## Ajusta indefinidos - INICIO -----
 
 # TestIndefinidos.R
@@ -258,5 +259,9 @@ bp <- barplot(valor, col=NA, yaxt='n', las=1, cex.names = 1.5, add=T)
 text(x=bp, y=valor, labels=round(valor,0), pos=3, xpd=NA)
 abline(h=h, col="red", lty=2)
 
+dfCarteiraBKP <- dfCarteira2
+dfCarteira2$valorizacao <- ((dfCarteira2$totalAtual*100)/dfCarteira2$TOTAL.OP)-100;
+
+write.csv(dfCarteira2, "dfCarteira2.csv", row.names=TRUE)
 
 ## VALOR PAGO X VALOR ATUAL - FIM -----
