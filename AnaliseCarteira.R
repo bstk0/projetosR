@@ -61,7 +61,7 @@ head(tbls_datafe, 4)
 
 # LENDO MINHA CARTEIRA -------
 # 
-csvPath <- 'CARTEIRA-2023-08-30.csv'
+csvPath <- 'CARTEIRA-2023-09-15.csv'
 #dfSetorDeParaA <- read.df(csvPath, "csv", header = "true", inferSchema = "true", na.strings = "NA")
 dfCarteira <- read.csv(csvPath)
 
@@ -75,12 +75,14 @@ dfCarteira <- read.csv(csvPath)
 
 summary(dfCarteira)
 
-dfCarteira1 <- select(dfCarteira, 'ACAO','QTDE','TOTAL.OP' ) 
+rm(dfCarteira1)
+
+dfCarteira1 <- select(dfCarteira, 'ACAO','QTDE','TOTAL_OP' ) 
 
 dfCarteira1[dfCarteira1$ACAO == "HABT11",]
 dfCarteira1[dfCarteira1$ACAO == "VSLH11",]
 
-dfCarteira1$TOTAL.OP <- virgulaToValor(dfCarteira1$TOTAL.OP)
+dfCarteira1$TOTAL_OP <- virgulaToValor(dfCarteira1$TOTAL_OP)
 
 summary(dfCarteira1)
 
@@ -88,7 +90,7 @@ summary(dfCarteira1)
 
 dfCarteira2 <- dfCarteira1 %>% 
   group_by(ACAO) %>% 
-  summarise(across(c(QTDE, TOTAL.OP), sum))
+  summarise(across(c(QTDE, TOTAL_OP), sum))
 
 
 dfCarteira2[dfCarteira2$ACAO == "VSLH11",]
@@ -106,12 +108,12 @@ tbls_datafe %>%
   filter(Fundos == "VSLH11") %>% 
   select_at(vars(`Preço Atual (R$)`))
 
-totalGeral <- sum(dfCarteira2$TOTAL.OP)
+totalGeral <- sum(dfCarteira2$TOTAL_OP)
 totalGeral
 
 # Percentual das ações por valor
 dfCarteira2 <- dfCarteira2 %>%
-  mutate(percent = (TOTAL.OP/totalGeral)*100)
+  mutate(percent = (TOTAL_OP/totalGeral)*100)
 
 sum(dfCarteira2$percent)
 dfCarteira2
@@ -177,11 +179,11 @@ View(dfCarteira2)
 
 dfCarteiraSetor <- dfCarteira2 %>% 
   group_by(Setor) %>% 
-  summarise(across(c(QTDE, TOTAL.OP), sum)) %>%
-  mutate(percent = (TOTAL.OP/totalGeral)*100)
+  summarise(across(c(QTDE, TOTAL_OP), sum)) %>%
+  mutate(percent = (TOTAL_OP/totalGeral)*100)
 
 sum(dfCarteiraSetor$percent)
-sum(dfCarteiraSetor$TOTAL.OP)
+sum(dfCarteiraSetor$TOTAL_OP)
 
 # funcionou - grafico pizza por setor 
 PieChart(x = Setor, y=percent, data = dfCarteiraSetor,
@@ -225,14 +227,14 @@ dif <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP)
 percDesv <- 100-(sum(dfCarteira2$totalAtual) * 100)/sum(dfCarteira2$TOTAL.OP)
 percDesv
 
-proventos <- 11443.42 # REAL 10294.36
+proventos <- 11800 # REAL 10294.36
 
 difProv <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP) + proventos
 difProv
 
 atualProv <- sum(dfCarteira2$totalAtual) + proventos
 
-valor <- c(sum(dfCarteira2$TOTAL.OP),sum(dfCarteira2$totalAtual),atualProv)
+valor <- c(sum(dfCarteira2$TOTAL_OP),sum(dfCarteira2$totalAtual),atualProv)
 legen <- c("1.Total Op.","2.Total Atual","3.Total Atual + Dividentos")
 
 dfGraph <- data.frame(legen, valor)
