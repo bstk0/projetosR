@@ -32,7 +32,8 @@ specify_decimal <- function(x, k) {
 tccPath = "C://BISTERCO//MBA//TCC//"
 # filename <- paste0("R-out_", format(Sys.Date(), "%d-%m-%Y"), ".html")
 #filename <- "C://BISTERCO//MBA//TCC//R-out_30-08-2023.html"
-filename <- paste(tccPath,"R-out_12-09-2023.html", sep = "")
+#filename <- paste(tccPath,"R-out_16-11-2023.html", sep = "")
+filename <- paste(tccPath,"R-out_11-01-2024.html", sep = "")
 
 
 fiife <- read_html(filename,encoding = "UTF-8")
@@ -61,9 +62,11 @@ head(tbls_datafe, 4)
 
 # LENDO MINHA CARTEIRA -------
 # 
-csvPath <- 'CARTEIRA-2023-09-15.csv'
+#csvPath <- 'CARTEIRA-2023-09-15.csv'
+#csvPath <- 'CARTEIRA-2023-11-17.csv'
+csvPath <- 'CARTEIRA-2024-01-10.csv'
 #dfSetorDeParaA <- read.df(csvPath, "csv", header = "true", inferSchema = "true", na.strings = "NA")
-dfCarteira <- read.csv(csvPath)
+dfCarteira <- read.csv(csvPath, sep=";")
 
 # agregar por ação ... nao deu certo
 # Group by count using R Base aggregate()
@@ -74,6 +77,17 @@ dfCarteira <- read.csv(csvPath)
 #                      by=list(dfCarteira$ACAO, dfCarteira$QTDE, dfCarteira$TOTAL.OP), FUN=length)
 
 summary(dfCarteira)
+
+#VALIDACAO P1 - 11.01.24
+options(scipen=100, digits = 3)
+dfCarteira$nTOTAL_OP <- virgulaToValor(dfCarteira$TOTAL_OP)
+dfCarteira$nValor <- virgulaToValor(dfCarteira$VALOR)
+dfCarteira$nQtde <- virgulaToValor(dfCarteira$QTDE)
+dfCarteira$nTOT <- as.numeric(dfCarteira$nValor * dfCarteira$nQtde)
+View(dfCarteira)
+sum(dfCarteira$nTOT) - sum(dfCarteira$nTOTAL_OP)
+# 138 - essa diferença de arredondamento aparece no Google P1
+#VALIDACAO P1 - 11.01.24 - FIM
 
 rm(dfCarteira1)
 
@@ -94,6 +108,7 @@ dfCarteira2 <- dfCarteira1 %>%
 
 
 dfCarteira2[dfCarteira2$ACAO == "VSLH11",]
+dfCarteira2[dfCarteira2$ACAO == "RZTR11",]
 
 # sum(dfCarteira1$TOTAL.OP[dfCarteira1$ACAO == "HABT11",])
 
@@ -185,7 +200,7 @@ dfCarteiraSetor <- dfCarteira2 %>%
 sum(dfCarteiraSetor$percent)
 sum(dfCarteiraSetor$TOTAL_OP)
 
-# funcionou - grafico pizza por setor 
+# Grafico pizza por setor --------------------
 PieChart(x = Setor, y=percent, data = dfCarteiraSetor,
          values_digits=2,
          main = NULL)
@@ -219,15 +234,22 @@ dfCarteira2 <- dfCarteira2 %>%
 
 dfCarteira2$totalAtual <- dfCarteira2$precoAtual * dfCarteira2$QTDE
 
+dfCarteira2$valorMedioPago <- dfCarteira2$TOTAL_OP / dfCarteira2$QTDE
+
+View(dfCarteira2)
+View(select(dfCarteira2, 'ACAO','QTDE','TOTAL_OP','totalAtual' ))
+
 sum(dfCarteira2$TOTAL.OP)
+sum(dfCarteira2$TOTAL_OP)
 sum(dfCarteira2$totalAtual)
 
 dif <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP)
 
-percDesv <- 100-(sum(dfCarteira2$totalAtual) * 100)/sum(dfCarteira2$TOTAL.OP)
+#percDesv <- 100-(sum(dfCarteira2$totalAtual) * 100)/sum(dfCarteira2$TOTAL.OP)
+percDesv <- 100-(sum(dfCarteira2$totalAtual) * 100)/sum(dfCarteira2$TOTAL_OP)
 percDesv
 
-proventos <- 11800 # REAL 10294.36
+proventos <- 13000 # REAL 10294.36
 
 difProv <- sum(dfCarteira2$totalAtual) - sum(dfCarteira2$TOTAL.OP) + proventos
 difProv
@@ -262,7 +284,7 @@ text(x=bp, y=valor, labels=round(valor,0), pos=3, xpd=NA)
 abline(h=h, col="red", lty=2)
 
 dfCarteiraBKP <- dfCarteira2
-dfCarteira2$valorizacao <- ((dfCarteira2$totalAtual*100)/dfCarteira2$TOTAL.OP)-100;
+dfCarteira2$valorizacao <- (((dfCarteira2$totalAtual*100)/dfCarteira2$TOTAL_OP)-100);
 
 write.csv(dfCarteira2, "dfCarteira2.csv", row.names=TRUE)
 
